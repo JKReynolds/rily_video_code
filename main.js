@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import 'ccapture.js-npmfixed'
 
 const USE_CCAPTURE = true
-const USE_AUDIO = false
-const SONG_PATH = ''
+const USE_AUDIO = true
+const SONG_PATH = 'audio/Arthur.mp3'
 
 let capturing = USE_CCAPTURE
 let capturer = new CCapture({ format: 'webm' })
@@ -114,6 +114,18 @@ function animate() {
    * Insert all the funky visual stuff in this loop
    */
 
+
+  shapes.forEach((shape, i) => {
+    pulseShape(shape, i)
+    if (i < 4) {
+      rotateShape(shape, .01, .01)
+    } else if (i < 8) {
+      rotateShape(shape, -.01, -.01)
+    } else {
+      rotateShape(shape, .01, -.01)
+    }
+  })
+
   renderer.render(scene, camera);
   frequencyArray = analyser.getFrequencyData()
 
@@ -123,7 +135,10 @@ function animate() {
 }
 
 // Initialize shapes etc
-let shapes = []
+let shapes = new Array(16).fill().map((e, i) => (
+  i < 4 ? makeShape('icosahedron', 0xff0000, false) : i < 8 ? makeShape('icosahedron', 0xffffff, false) : makeShape('icosahedron', 0xff00ff, false)
+))
+
 
 shapes.forEach((shape) => {
   scene.add(shape)

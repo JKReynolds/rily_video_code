@@ -10,3 +10,7 @@ https://github.com/nvm-sh/nvm
 
 ## Using CCapture
 With the animation running, if you click in the browser window, hitting the spacebar will save off a capture from the beginning of that page load until you hit the spacebar key. Hitting it again will capture the animation since the last capture.
+
+## Key Listeners
+- To mute the audio in the window press the down arrow.
+- To unmute the audio, press the up arrow
