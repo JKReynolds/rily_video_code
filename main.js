@@ -1,16 +1,21 @@
 import * as THREE from 'three';
+import { SimplexNoise } from 'three/examples/jsm/Addons.js';
 import 'ccapture.js-npmfixed'
+import { getLyric } from './utils/lyrics';
 
-const USE_CCAPTURE = true
-const USE_AUDIO = false
-const SONG_PATH = ''
+const USE_CCAPTURE = false
+const USE_AUDIO = true
+const SONG_PATH = 'sounds/Black Feathers Track 03.mp3'
 
 let capturing = USE_CCAPTURE
 let capturer = new CCapture({ format: 'webm' })
 
 // scene and renderer instantiation
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0,11,0)
+camera.lookAt(scene.position)
+
 const renderer = new THREE.WebGLRenderer();
 
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -108,11 +113,52 @@ function initializeKeyListeners() {
   })
 }
 
-function animate() {
+let direction = false
+let timeStamp = -3
+let lyricIndex = 0
+let textBox = document.getElementById('text-box')
+
+function animate(t) {  
   requestAnimationFrame(animate)
   /**
    * Insert all the funky visual stuff in this loop
    */
+
+  for( var i=0; i<pos.count; i++ ) {
+    var x = pos.getX( i ),	
+        y = pos.getY( i ),	
+        z = 1
+        *simplex.noise3d( x/2, y/2, t/2000 );
+
+    pos.setZ( i, z );
+  }
+
+  if (!direction) {
+    if (waves.material.color.b < .65) {
+      waves.material.color.b = waves.material.color.b +.005
+    } else {
+      direction = !direction
+    }    
+  } else {
+    if (waves.material.color.b > .35) {
+      waves.material.color.b = waves.material.color.b - .005
+    } else {
+      direction = !direction
+    }   
+  }
+  
+  timeStamp = timeStamp + listener.timeDelta
+  let fetchedLyric = getLyric(timeStamp, lyricIndex)
+
+  if (fetchedLyric != null) {
+    if (!fetchedLyric) {
+      lyricIndex++
+    } else {
+      textBox.innerHTML = fetchedLyric.toUpperCase()    
+    }
+  }
+
+  pos.needsUpdate = true;
 
   renderer.render(scene, camera);
   frequencyArray = analyser.getFrequencyData()
@@ -129,8 +175,18 @@ shapes.forEach((shape) => {
   scene.add(shape)
 })
 
-camera.position.z = 5;
+let geometry = new THREE.PlaneGeometry( 6, 6, 100, 100 )
+let	pos = geometry.getAttribute( 'position' )
+let	simplex = new SimplexNoise()
 
+var waves = new THREE.Points(
+  geometry,
+  new THREE.PointsMaterial( {size: 0.1, color: "magenta"} )
+);	
+
+waves.rotation.x = -Math.PI/2;
+scene.add( waves );
+console.log(waves.material)
 initializeKeyListeners()
 
 // start animation
@@ -139,3 +195,5 @@ animate()
 if (USE_CCAPTURE) {
   capturer.start()
 }
+
+
